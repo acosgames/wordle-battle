@@ -10,6 +10,8 @@ import WinScreen from './WinScreen';
 import PlayButton from './PlayButton';
 import RemainingTime from './RemainingTime';
 
+import ReactCodeInput from 'react-code-input';
+
 fs.set('userActivation', false);
 
 class Gamescreen extends Component {
@@ -49,6 +51,8 @@ class Gamescreen extends Component {
             )
         }
 
+        let local = fs.get('local');
+
         return (
             <div className="vstack vcenter relative" ref={el => {
                 if (!el) return;
@@ -59,7 +63,7 @@ class Gamescreen extends Component {
 
                 <Players />
                 <RemainingTime />
-                <Question></Question>
+                <Board playerid={local.id} />
 
 
             </div>
@@ -69,4 +73,82 @@ class Gamescreen extends Component {
 
 }
 
-export default fs.connect(['userActivation', 'events-gameover'])(Gamescreen);
+const inputProps = {
+    className: 'react-code-input',
+    inputStyle: {
+        fontFamily: 'monospace',
+        margin: '4px',
+        MozAppearance: 'textfield',
+        width: '15px',
+        borderRadius: '3px',
+        fontSize: '14px',
+        height: '26px',
+        paddingLeft: '7px',
+        backgroundColor: 'white',
+        color: 'lightskyblue',
+        border: '1px solid lightskyblue',
+        textTransform: 'uppercase'
+    },
+    inputStyleInvalid: {
+        fontFamily: 'monospace',
+        margin: '4px',
+        MozAppearance: 'textfield',
+        width: '15px',
+        borderRadius: '3px',
+        fontSize: '14px',
+        height: '26px',
+        paddingLeft: '7px',
+        backgroundColor: 'white',
+        color: 'red',
+        border: '1px solid red',
+        textTransform: 'uppercase'
+    }
+}
+
+function HistoryRow(props) {
+    return (
+        <ReactCodeInput type='text' fields={5} {...inputProps} />
+    )
+}
+function InputRow(props) {
+    return (
+        <ReactCodeInput type='text' fields={5} {...inputProps} />
+    )
+}
+function RemainingRow(props) {
+    return (
+        <ReactCodeInput type='text' fields={5} {...inputProps} />
+    )
+}
+function Board(props) {
+
+    let elements = [];
+    let state = fs.get('state');
+    let rules = fs.get('rules');
+    let players = fs.get('players');
+    let playerid = props.playerid;
+
+    let player = players[playerid];
+
+    for (var i = 0; i < rules.maxattempts; i++) {
+
+        if (i < player.attempt) {
+            elements.push(<div className="row"><HistoryRow key={"row-" + i} status={player.status[i]} /></div>)
+        }
+        else if (i == player.attempt) {
+            elements.push(<div className="row"><InputRow key={"row-" + i} /></div>);
+        }
+        else if (i > player.attempt) {
+            elements.push(<div className="row"><RemainingRow key={"row-" + i} /></div>);
+        }
+
+    }
+
+    return (
+        <div>
+            {elements}
+        </div>
+    )
+}
+
+export default fs.connect(['userActivation', 'rules', 'players', 'events-gameover'])(Gamescreen);

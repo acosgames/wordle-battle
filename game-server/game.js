@@ -5,18 +5,14 @@ let questions = cup.database();
 
 let defaultGame = {
     state: {
-        _qid: 0,
-        _history: [],
-        category: '',
-        question: '',
-        choices: [],
-        round: 0,
-        stage: 0
+        _index: 0,
+        _rank: 10
     },
     players: {},
     rules: {
-        rounds: 10,
-        maxplayers: 10
+        maxplayers: 10,
+        maxattempts: 6,
+        maxtime: 300
     },
     next: {},
     events: {}
@@ -24,7 +20,7 @@ let defaultGame = {
 
 
 
-class PopTrivia {
+class WordleBattle {
 
     onNewGame(action) {
         cup.setGame(defaultGame);
@@ -33,75 +29,60 @@ class PopTrivia {
 
     startGame() {
         let players = cup.players();
-        for (var id in players)
+
+        let rules = cup.rules();
+
+        for (var id in players) {
             players[id].score = 0;
+            players[id].rank = rules.maxplayers;
+            players[id].attempt = 0;
+        }
+
 
         this.nextRound();
     }
 
     onSkip(action) {
 
-        let state = cup.state();
-        let stage = state.stage || 0;
-
-        switch (state.stage) {
-            case 0:
-                this.endOfRound();
-                break;
-            default:
-                this.nextRound();
-                break;
-        }
-        //if (cup.reachedTimelimit(action))
-
+        this.endOfRound();
     }
 
-    nextQuestion() {
-        cup.next({
-            id: '*',
-        })
-        this.processNextQuestion();
-
-        cup.setTimelimit(20);
-    }
     endOfRound() {
         let state = cup.state();
-        state.stage += 1;
-        this.processCorrectAnswers();
-        cup.setTimelimit(6);
+        this.processWinners();
 
         let question = questions[state._qid];
         // cup.event('a', question.a);
         state.a = question.a;
     }
 
+    getRandomInt(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
+    }
+
     nextRound() {
         let state = cup.state();
         let rules = cup.rules();
-        if (state.round >= rules.rounds) {
-            this.processWinners();
-            return;
-        }
+        let db = cup.database();
+        state._index = this.getRandomInt(0, db.length);
 
-
-        state.round += 1;
-        state.stage = 0;
-
-        cup.event('q', state.round);
-        this.resetPlayerChoices();
-        this.nextQuestion();
+        cup.next({ id: '*' });
+        cup.setTimelimit(rules.maxtime);
     }
 
     onJoin(action) {
         if (!action.user.id)
             return;
 
-        let user = cup.players(action.user.id);
-        if (!user)
+        let players = cup.players();
+        let player = players[action.user.id];
+        if (!player)
             return;
 
+
         //new player defaults
-        user.score = 0;
 
     }
 
@@ -116,172 +97,107 @@ class PopTrivia {
             player.forfeit = true;
         }
 
-        let activeCount = 0;
-        for (var pid in players) {
-            if (!players[pid].forfeit)
-                activeCount++;
-        }
-        // if (players[id]) {
-        //     delete players[id];
-        // }
-        if (activeCount <= 1) {
-            this.processWinners();
-        }
+        this.checkIfGameOver();
     }
 
-    onPick(action) {
+    onAttempt(action) {
 
         // if (cup.reachedTimelimit(action)) {
         //     this.nextRound();
         //     cup.log("Pick passed timelimit, getting new round");
         //     return;
         // }
-
+        let rules = cup.rules();
         let state = cup.state();
         let player = cup.players(action.user.id);
+        let db = cup.database();
 
         //get the picked cell
-        let choice = action.payload.choice;
+        let attempt = action.payload;
+        let word = db[state._index];
 
-        if (choice < 0 || choice > state.choices.length) {
+        if (attempt.length != word.length) {
             cup.ignore();
             return;
         }
 
+        player.attempt++;
 
-        player.choice = choice;
+        if (attempt == word) {
+            let scoreFromTime = (rules.maxtime * 1000) - timeleft;
+            let scoreBonus = (rules.maxattempts - player.attempt);
+            player.score = scoreFromTime * scoreBonus;
+            player.rank = state._rank++;
+        }
 
-        cup.event('picked');
-        state.picked = player.id;
+        //map letters to capture counts and existance
+        let letters = {};
+        for (var i = 0; i < word.length; i++) {
+            let letter = word[i];
+            if (letters[letter])
+                letters[letter]++;
+            else
+                letters[letter] = 1;
+        }
 
-        let voted = 0;
+        //give a status when letter matches or exists in the word somewhere else, or not exist
+        let status = [];
+        for (var i = 0; i < word.length; i++) {
+            let letter = word[i];
+            if (letter == attempt[i]) {
+                status.push(2);
+                letters[letter]--;
+            }
+            else if (letters[letter] > 0) {
+                status.push(1);
+                letters[letter]--;
+            }
+            else
+                status.push(0);
+        }
+
+        player.status = player.status || {};
+        player.status[player.attempt] = status;
+
+        this.checkIfGameOver();
+    }
+
+    checkIfGameOver() {
+        let rules = cup.rules();
+        let maxattempts = rules.maxattempts;
+
+        let finished = 0;
         let playerList = cup.playerList();
         for (var id of playerList) {
             let player = cup.players(id);
-            if (player.choice != -1 && typeof player.choice !== 'undefined' && player.choice != null) {
-                voted++;
+            if (player.attempt > maxattempts || player.forfeit || player.completed) {
+                finished++;
             }
         }
 
         //end round
-        if (voted >= playerList.length) {
+        if (finished >= playerList.length) {
             this.onSkip();
         }
     }
 
 
-
-
-
-    resetPlayerChoices() {
-        let players = cup.players();
-        for (var id in players) {
-            let player = players[id];
-            // player.choices = player.choices || [];
-            // if (typeof player._choice !== 'undefined' && player._choice != null)
-            //     player.choices.push(player._choice);
-            // else
-            //     player.choices.push(-1);
-            player.choice = -1;
-        }
-    }
-
-    processNextQuestion() {
-        let state = cup.state();
-
-        //find a random question not asked before
-        let _qid = Math.floor(Math.random() * questions.length);
-        if (state._history.includes(_qid)) {
-            this.processNextQuestion();
-            return;
-        }
-
-        //setup next question
-        let question = questions[_qid];
-        state._qid = _qid;
-        state.question = question.q;
-        state.category = question.c;
-        if (question.t == 'boolean') {
-            //always True then False in the choices
-            state.choices = ['True', 'False']
-        }
-        else {
-            //sort the choices alphabetically
-            state.choices = [];
-            state.choices.push(question.a);
-            for (let i = 0; i < question.i.length; i++) {
-                state.choices.push(question.i[i]);
-            }
-            state.choices.sort();
-        }
-        //save this question in _history to avoid choosing again
-        state._history.push(_qid);
-    }
-
     processWinners() {
-        let playerList = [];
-        let playerIds = [];
         let players = cup.players();
+        let topPlayer = '';
 
         //add player id into the player data
         for (var id in players) {
-            players[id].id = id;
-            playerList.push(players[id]);
-        }
-
-        //sort all players by their score
-        playerList.sort((a, b) => {
-            return b.score - a.score;
-        })
-
-        //get the top 10 and rank them
-        let lastscore = null;
-        let winpos = 0;
-        let winners = [];
-        for (var i = 0; i < Math.min(playerList.length, 10); i++) {
-            let player = playerList[i];
-            if (lastscore != null && lastscore != player.score)
-                winpos++;
-            player.rank = winpos;
-            lastscore = player.score;
-            winners.push(player.id);
-        }
-
-
-        //remove id, so we don't send over network
-        for (var id in players) {
-            delete players[id]['id'];
-        }
-
-        let state = cup.state();
-        state.winners = winners;
-        cup.gameover(winners);
-    }
-
-    processCorrectAnswers() {
-        let players = cup.players();
-        let state = cup.state();
-        if (state.round <= 0)
-            return;
-
-        //award score for correct choices, remove score for wrong choices
-        for (var id in players) {
-            let player = players[id];
-            if (typeof player.choice == 'undefined' || player.choice == null || player.choice == -1)
-                continue;
-
-            let answer = questions[state._qid].a;
-            let userChoice = state.choices[player.choice];
-            if (answer == userChoice) {
-                player.score += 10;
-            }
-            else {
-                player.score -= 2;
+            if (players[id].rank == 1) {
+                topPlayer = id;
+                break;
             }
         }
+
+        cup.gameover(topPlayer);
     }
 
 
 }
 
-export default new PopTrivia();
+export default new WordleBattle();

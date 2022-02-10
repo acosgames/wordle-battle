@@ -1,12 +1,12 @@
 import cup from './acosg';
-import PopTrivia from './game';
+import WordleBattle from './game';
 
 
 
-cup.on('gamestart', (action) => PopTrivia.onNewGame(action));
-cup.on('skip', (action) => PopTrivia.onSkip(action));
-cup.on('join', (action) => PopTrivia.onJoin(action));
-cup.on('leave', (action) => PopTrivia.onLeave(action));
-cup.on('pick', (action) => PopTrivia.onPick(action));
+cup.on('gamestart', (action) => WordleBattle.onNewGame(action));
+cup.on('skip', (action) => WordleBattle.onSkip(action));
+cup.on('join', (action) => WordleBattle.onJoin(action));
+cup.on('leave', (action) => WordleBattle.onLeave(action));
+cup.on('pick', (action) => WordleBattle.onAttempt(action));
 
 cup.commit();
