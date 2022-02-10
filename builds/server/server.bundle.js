@@ -242,7 +242,7 @@ let questions = _acosg__WEBPACK_IMPORTED_MODULE_0__["default"].database();
 let defaultGame = {
     state: {
         _index: 0,
-        _rank: 10
+        _rank: 1
     },
     players: {},
     rules: {
@@ -364,6 +364,11 @@ class WordleBattle {
             let scoreBonus = (rules.maxattempts - player.attempt);
             player.score = scoreFromTime * scoreBonus;
             player.rank = state._rank++;
+        }
+
+        if (!db.includes(attempt)) {
+            _acosg__WEBPACK_IMPORTED_MODULE_0__["default"].ignore();
+            return;
         }
 
         //map letters to capture counts and existance

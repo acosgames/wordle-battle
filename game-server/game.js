@@ -6,7 +6,7 @@ let questions = cup.database();
 let defaultGame = {
     state: {
         _index: 0,
-        _rank: 10
+        _rank: 1
     },
     players: {},
     rules: {
@@ -128,6 +128,11 @@ class WordleBattle {
             let scoreBonus = (rules.maxattempts - player.attempt);
             player.score = scoreFromTime * scoreBonus;
             player.rank = state._rank++;
+        }
+
+        if (!db.includes(attempt)) {
+            cup.ignore();
+            return;
         }
 
         //map letters to capture counts and existance
