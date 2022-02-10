@@ -1,5 +1,5 @@
-# anime-trivia-simple
-Test your knowledge of Anime in this simple trivia game!  
+# Wordle Battle
+Battle up to 5 opponents to conquer the Wordle
 
 [View Acos Documentation](https://docs.acos.games)
 
@@ -14,15 +14,6 @@ Requires Node v16+
 npm install
 ```
 
-### Create database.json
-
-Rename `sample-database.json` to `database.json`.
-
-The real database.json will not be shared, to avoid sharing answers.
-
-The trivia questions come from:
-https://opentdb.com/api_config.php
-
 ### Run Simulator, Client, and Server
 ```bash
 npm start
@@ -34,7 +25,7 @@ npm start
 2. Enter a username on each tab and click 'Join'
 3. When ready, press "Start Game"
 
-The game was designed to play in Full Screen mode.
+The game was designed to play in Fixed Resolution, 4:4 mode.
 
 
 ## About Client
