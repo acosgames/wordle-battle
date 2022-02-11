@@ -360,9 +360,11 @@ class WordleBattle {
         player.attempt++;
 
         if (attempt == word) {
-            let scoreFromTime = (rules.maxtime * 1000) - timeleft;
+            let scoreFromTime = (rules.maxtime) - (action.timeleft / 1000);
             let scoreBonus = (rules.maxattempts - player.attempt);
-            player.score = scoreFromTime * scoreBonus;
+            if (scoreBonus < 0)
+                scoreBonus = rules.maxattempts / player.attempt;
+            player.score = Math.round(scoreFromTime * scoreBonus);
             player.rank = state._rank++;
         }
 
@@ -373,7 +375,7 @@ class WordleBattle {
 
         //map letters to capture counts and existance
         let letters = {};
-        for (var i = 0; i < word.length; i++) {
+        for (var i = 0; i < attempt.length; i++) {
             let letter = word[i];
             if (letters[letter])
                 letters[letter]++;
@@ -383,9 +385,9 @@ class WordleBattle {
 
         //give a status when letter matches or exists in the word somewhere else, or not exist
         let status = [];
-        for (var i = 0; i < word.length; i++) {
-            let letter = word[i];
-            if (letter == attempt[i]) {
+        for (var i = 0; i < attempt.length; i++) {
+            let letter = attempt[i];
+            if (letter == word[i]) {
                 status.push(2);
                 letters[letter]--;
             }
@@ -398,7 +400,9 @@ class WordleBattle {
         }
 
         player.status = player.status || {};
-        player.status[player.attempt] = status;
+        player.status[player.attempt - 1] = status;
+        player._history = player._history || [];
+        player._history.push(attempt);
 
         this.checkIfGameOver();
     }
