@@ -128,7 +128,7 @@ class WordleBattle {
             let scoreBonus = (rules.maxattempts - player.attempt);
             if (player.attempt >= rules.maxattempts)
                 scoreBonus = rules.maxattempts / player.attempt;
-            player.score = Math.round(scoreFromTime * scoreBonus);
+            player.score = Math.round(10 * scoreBonus);
             player.rank = state._rank++;
         }
 
