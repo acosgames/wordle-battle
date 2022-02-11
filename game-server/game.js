@@ -51,9 +51,9 @@ class WordleBattle {
         let state = cup.state();
         this.processWinners();
 
-        let question = questions[state._qid];
-        // cup.event('a', question.a);
-        state.a = question.a;
+        // let question = questions[state._qid];
+        // // cup.event('a', question.a);
+        // state.a = question.a;
     }
 
     getRandomInt(min, max) {
@@ -124,9 +124,9 @@ class WordleBattle {
         player.attempt++;
 
         if (attempt == word) {
-            let scoreFromTime = (rules.maxtime) - (action.timeleft / 1000);
+            let scoreFromTime = (rules.maxtime - ((rules.maxtime) - (action.timeleft / 1000)));
             let scoreBonus = (rules.maxattempts - player.attempt);
-            if (scoreBonus < 0)
+            if (player.attempt >= rules.maxattempts)
                 scoreBonus = rules.maxattempts / player.attempt;
             player.score = Math.round(scoreFromTime * scoreBonus);
             player.rank = state._rank++;

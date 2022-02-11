@@ -7,17 +7,17 @@ function HistoryRow(props) {
 
     let local = fs.get('local');
     if (!local)
-        return <RemainingRow key={"row-" + props.index} />
+        return <RemainingRow key={"remainrow-" + props.index} />
 
     let history = local._history || {};
     let word = history[props.index];
     if (!word) {
-        return <RemainingRow key={"row-" + props.index} />
+        return <RemainingRow key={"remainrow-" + props.index} />
     }
 
     let status = local.status[props.index];
     if (!status) {
-        return <RemainingRow key={"row-" + props.index} />
+        return <RemainingRow key={"remainrow-" + props.index} />
     }
     return (
         <div className="squares">
@@ -103,4 +103,4 @@ function Board(props) {
     )
 }
 
-export default fs.connect(['state-gamestatus', 'local'])(Board);
+export default fs.connect(['state-gamestatus', 'rules', 'local'])(Board);
