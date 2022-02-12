@@ -8,9 +8,9 @@ class Players extends Component {
         super(props);
     }
 
-    createPlayer(player) {
+    createPlayer(id, player) {
         return (
-            <div className="hstack-noh" key={"player" + player.id}>
+            <div className="hstack-noh" key={"player" + id}>
                 <span className="player">{player.name}</span>
                 <span className="playerscore">{player.score || 0}</span>
             </div>
@@ -31,13 +31,13 @@ class Players extends Component {
 
         let playerList = [];
 
-        playerList.push(this.createPlayer(local));
+        playerList.push(this.createPlayer(local.id, local));
 
         for (var id in players) {
             let player = players[id];
             if (player.name == local.name)
                 continue;
-            playerList.push(this.createPlayer(player))
+            playerList.push(this.createPlayer(id, player))
         }
 
         return playerList;

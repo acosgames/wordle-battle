@@ -154,9 +154,9 @@ function Input({
             //   document.activeElement,
             //   ref.current !== document.activeElement
             // );
-            if (ref.current !== document.activeElement && isFocused) {
-                ref.current.focus();
-            }
+            // if (ref.current !== document.activeElement && isFocused) {
+            //     ref.current.focus();
+            // }
         });
     }, [isFocused]);
 

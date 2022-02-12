@@ -11,6 +11,18 @@ class RemainingTime extends Component {
         let timeleft = fs.get('timeleft') || 0;
         timeleft = Number(timeleft) || 0;
         timeleft = Math.ceil(timeleft / 1000);
+
+        if (timeleft <= 0)
+            return (
+                <div className="timeleft">
+                    <div className="center">
+                        <h3 className="gameover-text">Game Over</h3>
+                        <h3 className="thanks-text">Thanks for playing!</h3>
+                    </div>
+                </div>
+
+            )
+
         return (
             <div className="timeleft">
                 <div className="center">
@@ -23,4 +35,4 @@ class RemainingTime extends Component {
 
 }
 
-export default fs.connect(['timeleft', 'state-round'])(RemainingTime);
+export default fs.connect(['timeleft'])(RemainingTime);

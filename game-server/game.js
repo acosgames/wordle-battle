@@ -69,7 +69,7 @@ class WordleBattle {
         state._index = this.getRandomInt(0, db.length);
 
         cup.next({ id: '*' });
-        cup.setTimelimit(rules.maxtime);
+        cup.setTimelimit(5);
     }
 
     onJoin(action) {
@@ -203,7 +203,7 @@ class WordleBattle {
             }
         }
 
-        cup.gameover(topPlayer);
+        cup.gameover(true);
     }
 
 

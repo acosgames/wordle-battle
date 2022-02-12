@@ -37,17 +37,7 @@ class Gamescreen extends Component {
         //     return <PlayButton />
         // }
 
-        let events = fs.get('events');
-        if (events?.gameover) {
-            return (
-                <div className="vstack vcenter relative">
-                    <h3 className="gameover-text">Game Over</h3>
-                    <WinScreen></WinScreen>
 
-                    <h3 className="thanks-text">Thanks for playing!</h3>
-                </div>
-            )
-        }
 
 
         return (
@@ -56,7 +46,6 @@ class Gamescreen extends Component {
                 this.ref = el;
                 setTimeout(this.updatePosition.bind(this), 2000);
             }}>
-
                 <RemainingTime />
                 <Board />
                 <Players />
@@ -68,6 +57,19 @@ class Gamescreen extends Component {
 
 }
 
+function GameOverScreen(props) {
+    let events = fs.get('events');
+    if (events?.gameover) {
+        return (
+            <div className="vstack vcenter relative">
+                <h3 className="gameover-text">Game Over</h3>
+                <WinScreen></WinScreen>
+
+                <h3 className="thanks-text">Thanks for playing!</h3>
+            </div>
+        )
+    }
+}
 
 
 export default fs.connect(['userActivation', 'events-gameover'])(Gamescreen);

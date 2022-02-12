@@ -305,7 +305,7 @@ class WordleBattle {
         state._index = this.getRandomInt(0, db.length);
 
         _acosg__WEBPACK_IMPORTED_MODULE_0__["default"].next({ id: '*' });
-        _acosg__WEBPACK_IMPORTED_MODULE_0__["default"].setTimelimit(rules.maxtime);
+        _acosg__WEBPACK_IMPORTED_MODULE_0__["default"].setTimelimit(5);
     }
 
     onJoin(action) {
@@ -364,7 +364,7 @@ class WordleBattle {
             let scoreBonus = (rules.maxattempts - player.attempt);
             if (player.attempt >= rules.maxattempts)
                 scoreBonus = rules.maxattempts / player.attempt;
-            player.score = Math.round(scoreFromTime * scoreBonus);
+            player.score = Math.round(10 * scoreBonus);
             player.rank = state._rank++;
         }
 
@@ -439,7 +439,7 @@ class WordleBattle {
             }
         }
 
-        _acosg__WEBPACK_IMPORTED_MODULE_0__["default"].gameover(topPlayer);
+        _acosg__WEBPACK_IMPORTED_MODULE_0__["default"].gameover(true);
     }
 
 
